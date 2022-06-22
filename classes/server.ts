@@ -8,7 +8,7 @@ export default class Server
 
 
 {   
-    private static _instance: Server
+    private static _instance: Server;
     public app: express.Application;
     public port: number;
     

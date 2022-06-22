@@ -24,3 +24,5 @@ router.post('/mensajes', (req:Request, res:Response) =>
    });
 
 });
+
+export default router;
