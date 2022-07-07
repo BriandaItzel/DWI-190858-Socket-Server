@@ -1,42 +1,48 @@
-import express from 'express'
+import express from 'express';
 import { SERVER_PORT } from '../global/environment';
-import  SocketIO from 'socket.io';
+import socketIO from 'socket.io';
 import http from 'http';
+import * as socket from '../sockets/sockets'
 
+export  default class Server
+{
+    /*private static _instance: Server;*/
 
-export default class Server 
-
-
-{   
-    private static _instance: Server;
     public app: express.Application;
     public port: number;
-    
-    public io: SocketIO.Server;
+
+    public io: socketIO.Server;
     private httpServer: http.Server;
 
-    constructor()
-{
-    this.app = express();
-    this.port = SERVER_PORT;
+    constructor(){
+        this.app = express();
+        this.port = SERVER_PORT;
+        this.httpServer = new http.Server( this.app );
+        this.io = new socketIO.Server( this.httpServer,
+            {
+                cors:{origin:true, credentials:true}
+            } );
 
-    this.httpServer = new http.Server(this.app);
-    this.io = new SocketIO.Server( this.httpServer );
+        this.escucharSockets();
+    }
 
-    this.escucharSockets();
-}
- 
-public static get instance (){
-    return this._instance || (this._instance = new this());
-}
-private escucharSockets(){
-    console.log('Escuchando conexiones - sockets');
-    this.io.on('conection', cliente => {
-        console.log('cliente conectado');
-    })
-}
- start(callback: () => void) {
-    this.httpServer.listen(this.port, callback);
- }
+    /*public static get instance (){
+        return this._instance || ( this._instance = new this() );
+    }*/
+
+    private escucharSockets(){
+        this.io.on('connection', (cliente)=>{
+            console.log('Cliente conectado');
+
+            socket.mensaje(cliente);
+                //Para q se deconecte 
+            socket.desconectar(cliente);
+        });
+
+    }
+
+    start(callback: Function){
+        this.httpServer.listen(this.port, callback());
+    }
 
 }
